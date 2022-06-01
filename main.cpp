@@ -1,176 +1,144 @@
 #include<stdio.h>
-#include<string.h>
 #include<stdlib.h>
+#include<string.h>
+
 struct Account
 {
-	char name[100];
-	char password[7];
-	char idcard[19];
-	char tel[12];
-	char username[100];//卡号待查询
-	float money;
-	struct Account *next;
+	char username[100];
+	char password[100];
+
+	struct Account * next;
 };
-
 typedef struct Account Account;
-	Account *head=NULL;
-	Account *tail=NULL;
 
-void loadDate()//更新数据
+Account * head=NULL;
+Account * tail=NULL;
+
+Account * curAccount=NULL;
+
+//找到返回1，找不到返回0
+int findAccount(Account a)
 {
-	FILE *fp=fopen("E://name.txt","r");
-	if(fp!=NULL)
+	Account * curP=head;
+	while(curP!=NULL)
 	{
-		while(!feof(fp))
+		if((strcmp(curP->username,a.username)==0)&&(strcmp(curP->password,a.password)==0))
 		{
-			Account *Node=(Account *)malloc(sizeof(Account));
-			fscanf(fp,"%s %s %s\n",Node->name,Node->username,Node->password);
-			Node->next=NULL;
-			if(head==NULL)
-			{
-				head=Node;
-				tail=Node;
-			}
-			else
-			{
-				tail->next=Node;
-				tail=Node;
-			}
+			curAccount = curP;
+			return 1;
 		}
-	printf("加载完毕！\n");
-	fclose(fp);
+		curP=curP->next;
 	}
-}
-void printAccount(Account a)//打印账户信息
-{
-	printf("%s\t%s\t%s\n",a.name,a.username,a.password);
-}
-void printLinkedList()//打印链表
-{
-	Account *curp=head;
-	while(curp!=NULL)
-	{
-		printAccount(*curp);
-		curp=curp->next;
-	}
-}
-void saveDate()//保存数据
-{
-	FILE *fp=fopen("E:/name.txt","w");
-	if(fp!=NULL)
-	{
-		Account *curp=head;
-		while(curp!=NULL)
-		{
-			fprintf(fp,"%s\t%s\t%s\n",curp->name,curp->username,curp->password);
-			curp=curp->next;
-		}
-		fclose(fp);
-	}
+	return 0;
 }
 
-void signUp()//登录
+void updatePassword()
 {
-	Account a;
-	printf("请输入卡号：\n");
-	scanf("%s",a.username);
-
-	printf("请输入密码：\n");
-	scanf("%s",a.password);
+	char oldPassword[100]={'\0'};
+	printf("请输入旧密码：\n");
 	
+	scanf("%s",oldPassword);
+	if(strcmp(oldPassword,curAccount->password)==0)
+	{
+		printf("请输入新密码：\n");
+		scanf("%s",curAccount->password);
+	}
+	else
+	{
+		printf("密码错误，不能修改！\n");
+	}
+
 }
 
-void creataccount()//创建账号
+void showMenu()
 {
-	Account a;
-	while(1)
-	{
-	printf("请输入姓名：\n身份证号：\n电话号码：\n");    
-	scanf("%s %s %s",a.name,a.idcard,a.tel);
-	printf("请输入初始金额：\n");
-	scanf("%f",&a.money);
-	printf("正在创建账户，请稍等\n");
-	//随机卡号
-	stand(time(0));
-	int m=rand();
-	a.username=m%1000+10000000;
-	printf("这是您的卡号\n");
-	printf("%s",a.username);
-	}
+	system("cls");
+	printf("修改密码请按1：\n");
+
+	updatePassword();
 }
 
 void signIn()
 {
-	Account a,b;
-	int n;
-	printf("请输入账号：\n");
-	printf("请输入密码：\n");
+	Account a;
+	printf("请输入账号：");
+	scanf("%s",a.username);
+
+	printf("请输入密码：");
 	scanf("%s",a.password);
-	printf("请在输入一次密码:\n");
-	scanf("%s",b.password);
-	if(strcmp(a.password,a.password)==0)
+
+	if(findAccount(a))
 	{
-		printf("请选择业务\n");
-		printf("=====================================\n");
-		printf("1.存款\t2.转账\t3.查询余额\n");
-		printf("4.修改密码\t5.打回执单\t6.退卡\n");
-		printf("=====================================\n");
-		while(1)
+		printf("登录成功\n");
+		showMenu();
+	}
+	else
+	{
+		printf("登录失败！\n");
+	}
+}
+
+//加载成功返回1，加载失败返回0
+int loadData()
+{
+	FILE* fp=fopen("D:\\atm.txt","r");
+	if(fp==NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		while(!feof(fp))
 		{
-			printf("请输入你要选择的数字\n");
-			scanf("%d",&n);
-			switch(n)
+			//创建结点(堆)
+			Account * newNode=(Account *)malloc(sizeof(Account));
+			//结点初始化
+			newNode->next=NULL;
+			fscanf(fp,"%s %s\n",newNode->username,newNode->password);
+
+			//添加结点到链表
+			if(head==NULL)
 			{
-			case 1:cunkuan();break;
-			case 2:zhuanzhang();break;
-			case 3:chaxun();break;
-			case 4:xiugaimima();break;
-			case 5:huizhidan();break;
-			case 6:tuika();break;
+				head=newNode;
+				tail=newNode;
+			}
+			else
+			{
+				tail->next=newNode;
+				tail=newNode;
 			}
 		}
+		fclose(fp);
+		return 1;
 	}
-
 }
 
-void showChinese()
+void printLinkedList()
 {
-	
-	printf("输入1，创建账户\n");
-	printf("输入2，登录\n");
-	char c;
-	
-	scanf("%s",&c);
-	if(c=='1')
+	Account * curP=head;
+	while(curP!=NULL)
 	{
-		signUp();
-	}
-	else if(c=='2')
-	{
-		signIn();
+		printf("%s\t%s\n",curP->username,curP->password);
+		curP=curP->next;
 	}
 }
 
-void showEnglish()
-{
-	//do something...
-}
 
 int main()
 {
-	printf("输入1，选择中文\n");
-	printf("Input 2，Show English\n");
-	char c;
-	scanf("%c",&c);
-	if(c=='1')
+	int status=loadData();
+	if(status==1)
 	{
-		showChinese();//显示中文菜单
+		printf("加载成功!\n");
 	}
-	else if(c=='2')
+	else
 	{
-		showEnglish();//显示英文菜单
+		printf("加载失败!\n");
 	}
 
-loadDate();
+	printLinkedList();
+
+	signIn();
+
 	return 0;
 }
